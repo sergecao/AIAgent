@@ -1,0 +1,44 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Первая",
+      "description": "",
+      "status": "archived",
+      "created_at": "2026-04-01T17:02:24.359723",
+      "updated_at": "2026-04-01T21:50:23.717366"
+    },
+    {
+      "id": 2,
+      "title": "Вторая",
+      "description": "",
+      "status": "done",
+      "created_at": "2026-04-01T21:26:23.806625",
+      "updated_at": "2026-04-01T21:56:04.413301"
+    },
+    {
+      "id": 3,
+      "title": "3",
+      "description": "",
+      "status": "new",
+      "created_at": "2026-04-01T21:50:21.510511",
+      "updated_at": "2026-04-01T21:50:21.510511"
+    },
+    {
+      "id": 4,
+      "title": "4",
+      "description": "",
+      "status": "new",
+      "created_at": "2026-04-01T21:53:53.226863",
+      "updated_at": "2026-04-01T21:53:53.226863"
+    },
+    {
+      "id": 5,
+      "title": "5",
+      "description": "",
+      "status": "new",
+      "created_at": "2026-04-01T21:55:53.805344",
+      "updated_at": "2026-04-01T21:55:53.805344"
+    }
+  ]
+}

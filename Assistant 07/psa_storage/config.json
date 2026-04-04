@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "created_at": "2026-04-01T16:48:17.560519",
+  "user_id": "default",
+  "settings": {
+    "auto_save_enabled": true,
+    "auto_save_interval_minutes": 5,
+    "language": "ru"
+  }
+}

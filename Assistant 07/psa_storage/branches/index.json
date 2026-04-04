@@ -1,0 +1,35 @@
+{
+  "branches": [
+    {
+      "id": "20260401_212724_первая_ветка",
+      "name": "Первая ветка",
+      "description": "",
+      "role": "default",
+      "created_at": "2026-04-01T21:27:24.198128",
+      "updated_at": "2026-04-01T21:27:24.198128",
+      "context_items": 0,
+      "path": "branches/20260401_212724_первая_ветка"
+    },
+    {
+      "id": "20260401_214940_1",
+      "name": "1",
+      "description": "",
+      "role": "default",
+      "created_at": "2026-04-01T21:49:40.885173",
+      "updated_at": "2026-04-01T21:49:40.885173",
+      "context_items": 0,
+      "path": "branches/20260401_214940_1"
+    },
+    {
+      "id": "20260401_215618_2",
+      "name": "2",
+      "description": "",
+      "role": "default",
+      "created_at": "2026-04-01T21:56:18.245135",
+      "updated_at": "2026-04-01T21:56:18.245135",
+      "context_items": 0,
+      "path": "branches/20260401_215618_2"
+    }
+  ],
+  "current": "20260401_212724_первая_ветка"
+}
