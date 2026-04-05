@@ -1,5 +1,6 @@
 # core/session_manager.py
 from core.token_optimizer import TokenOptimizer
+from data.session_index import SessionIndex
 import logging
 import threading
 import time
@@ -21,7 +22,8 @@ class SessionManager:
         self.current_session: Optional[Dict] = None
         self.auto_save_thread: Optional[threading.Thread] = None
         self._stop_flag = False
-        self.token_optimizer = TokenOptimizer()  # ← ДОБАВЛЕНО
+        self.token_optimizer = TokenOptimizer()
+        self.session_index = SessionIndex(self.storage)  # ← Индекс сессий
         self._ensure_index()
         if SESSION_CONFIG.get("auto_save_enabled"):
             self._start_auto_save()
@@ -51,10 +53,8 @@ class SessionManager:
             "context": {},
             "status": "active"
         }
-        # Добавляем в индекс
-        index = self._load_index()
-        index.append({"id": session_id, "title": title, "start": self.current_session["start_time"]})
-        self._save_index(index)
+        # Добавляем в индекс через SessionIndex
+        self.session_index.add_session(session_id, title, self.current_session["start_time"], tags)
         logger.info(f"Сессия начата: {session_id}")
         return self.current_session
 
@@ -65,6 +65,12 @@ class SessionManager:
         self.current_session["end_time"] = datetime.now().isoformat()
         self.current_session["status"] = "closed"
         self._save_session_file()
+        # Обновляем статус в индексе
+        self.session_index.update_session(
+            self.current_session["id"],
+            self.current_session["end_time"],
+            "closed"
+        )
         self.current_session = None
         logger.info("Сессия завершена")
 
@@ -114,27 +120,25 @@ class SessionManager:
 
     def get_history(self, limit: int = 10) -> list:
         """Получает историю сессий."""
-        index = self._load_index()
-        return sorted(index, key=lambda x: x.get("start", ""), reverse=True)[:limit]
+        return self.session_index.get_archive(limit)
 
     def restore_last_session(self) -> Optional[Dict]:
         """Пытается восстановить последнюю активную сессию."""
-        # Упрощенная логика: ищем файл последней сессии
-        files = self.storage.list_files(self.subfolder, ".json")
-        if not files:
+        active = self.session_index.get_active_sessions()
+        if not active:
             return None
-        # Берем последний по имени (так как там дата)
-        files.sort(reverse=True)
-        last_file = files[0]
-        if last_file == "index.json":
-            return None
-        data = self.storage.read_json(self.subfolder, last_file)
-        if data and data.get("status") == "active":
-            self.current_session = data
-            logger.info(f"Сессия восстановлена: {last_file}")
-            return data
+        # Берем последнюю активную
+        last = active[-1]
+        session_id = last["id"]
+        filename = f"{session_id}.json"
+        if self.storage.file_exists(self.subfolder, filename):
+            data = self.storage.read_json(self.subfolder, filename)
+            if data and data.get("status") == "active":
+                self.current_session = data
+                logger.info(f"Сессия восстановлена: {filename}")
+                return data
         return None
-    
+
     def get_optimized_context(self) -> str:
         """Получает оптимизированный контекст для промпта ИИ."""
         if not self.current_session:
@@ -144,3 +148,31 @@ class SessionManager:
     def get_token_stats(self) -> Dict:
         """Возвращает статистику оптимизации токенов."""
         return self.token_optimizer.get_stats()
+
+    def search_sessions_by_tag(self, tag: str) -> list:
+        """Ищет сессии по тегу."""
+        return self.session_index.search_by_tag(tag)
+
+    def search_sessions_by_title(self, keyword: str) -> list:
+        """Ищет сессии по заголовку."""
+        return self.session_index.search_by_title(keyword)
+
+    def get_session_stats(self) -> Dict:
+        """Возвращает статистику по сессиям."""
+        return self.session_index.get_stats()
+
+    def add_tag_to_current(self, tag: str):
+        """Добавляет тег к текущей сессии."""
+        if self.current_session:
+            if tag not in self.current_session["tags"]:
+                self.current_session["tags"].append(tag)
+                self._save_session_file()
+                logger.info(f"Тег '{tag}' добавлен к сессии")
+
+    def remove_tag_from_current(self, tag: str):
+        """Удаляет тег из текущей сессии."""
+        if self.current_session:
+            if tag in self.current_session["tags"]:
+                self.current_session["tags"].remove(tag)
+                self._save_session_file()
+                logger.info(f"Тег '{tag}' удалён из сессии")
